@@ -14,7 +14,7 @@ driver.get(url)
 
 data = []
 
-for i in range(5): 
+for i in range(50): 
     # Tunggu sampai elemen produk muncul
     WebDriverWait(driver, 100).until(
         EC.presence_of_element_located((By.CLASS_NAME, "css-16vw0vn"))
@@ -32,7 +32,7 @@ for i in range(5):
             continue  # Skip jika elemen tidak ditemukan
         
     # Tunggu sebelum klik tombol berikutnya
-    time.sleep(10)
+    time.sleep(15)
     
     # Klik tombol "Laman Berikutnya" jika ada
     try:
