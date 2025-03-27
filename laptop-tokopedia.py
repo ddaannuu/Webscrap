@@ -25,15 +25,15 @@ WebDriverWait(driver, 10).until(
 )
 
 products = []
+seen_products = set()  # Set untuk menyimpan produk unik
 
 page = 1
-barisNomor = 1
 while page <= TOTAL_PAGES:
     print(f"Scraping halaman {page}...")
 
-    for _ in range(5): 
+    for _ in range(5):
         driver.execute_script("window.scrollBy(0, 1000);")
-        time.sleep(4)
+        time.sleep(3)
 
     soup = BeautifulSoup(driver.page_source, "html.parser")
     container_class = soup.find_all("div", class_="css-5wh65g")
@@ -55,10 +55,12 @@ while page <= TOTAL_PAGES:
 
         price_list = re.sub(r'[^0-9]', '', price_list)
         price_list = int(price_list) if price_list.isdigit() else 0
-        
-        products.append([barisNomor, product_name, price_list, rating, terjual, toko, lokasi])
-        barisNomor += 1
 
+        # Cek duplikasi sebelum menambahkan data
+        if (product_name, price_list) not in seen_products:
+            seen_products.add((product_name, price_list))
+            products.append([product_name, price_list, rating, terjual, toko, lokasi])
+    
     try:
         next_button = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, "//button[@aria-label='Laman berikutnya']"))
@@ -67,19 +69,18 @@ while page <= TOTAL_PAGES:
         time.sleep(5)
     except:
         print("Tombol Next tidak ditemukan atau sudah di halaman terakhir.")
-        break 
+        break
 
     page += 1
 
 # Urutkan produk berdasarkan harga terbesar ke terkecil
-products.sort(key=lambda x: x[2], reverse=True)
+products.sort(key=lambda x: x[1], reverse=True)
 
 with open("datalaptoptokopedia.csv", "w", newline="", encoding="utf-8") as file:
     writer = csv.writer(file)
-    writer.writerow(["No", "Nama Produk", "Harga", "Rating", "Terjual", "Toko", "Lokasi"])  
+    writer.writerow(["No", "Nama Produk", "Harga", "Rating", "Terjual", "Toko", "Lokasi"])
     for i, product in enumerate(products, start=1):
-        product[0] = i  # Perbarui nomor urut
-        writer.writerow(product)
+        writer.writerow([i] + product)
 
 # Tutup browser
 driver.quit()
@@ -94,7 +95,7 @@ kategori = {
 }
 
 for product in products:
-    harga = product[2]
+    harga = product[1]
     if harga < 5000000:
         kategori["Di bawah 5 juta"] += 1
     elif 5000000 <= harga < 10000000:
