@@ -14,26 +14,29 @@ TOTAL_PAGES = 85
 url = 'https://www.tokopedia.com/search?st=&q=laptop&srp_component_id=02.01.00.00&srp_page_id=&srp_page_title=&navsource='
 
 options = webdriver.ChromeOptions()
+options.add_argument("--headless") 
+options.add_argument("--disable-gpu") 
+options.add_argument("--no-sandbox") 
+options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36")
+
 options.add_argument("--start-maximized")
 driver = webdriver.Chrome(options=options)
 driver.get(url)
-
-time.sleep(5)
 
 WebDriverWait(driver, 10).until(
     EC.presence_of_element_located((By.CLASS_NAME, "css-5wh65g"))
 )
 
 products = []
-seen_products = set()  # Set untuk menyimpan produk unik
+seen_products = set() 
 
 page = 1
 while page <= TOTAL_PAGES:
     print(f"Scraping halaman {page}...")
 
-    for _ in range(5):
-        driver.execute_script("window.scrollBy(0, 1000);")
-        time.sleep(3)
+    for _ in range(4):
+        driver.execute_script("window.scrollBy(0, 1200);")
+        time.sleep(1)
 
     soup = BeautifulSoup(driver.page_source, "html.parser")
     container_class = soup.find_all("div", class_="css-5wh65g")
@@ -56,7 +59,6 @@ while page <= TOTAL_PAGES:
         price_list = re.sub(r'[^0-9]', '', price_list)
         price_list = int(price_list) if price_list.isdigit() else 0
 
-        # Cek duplikasi sebelum menambahkan data
         if (product_name, price_list) not in seen_products:
             seen_products.add((product_name, price_list))
             products.append([product_name, price_list, rating, terjual, toko, lokasi])
@@ -66,27 +68,24 @@ while page <= TOTAL_PAGES:
             EC.element_to_be_clickable((By.XPATH, "//button[@aria-label='Laman berikutnya']"))
         )
         next_button.click()
-        time.sleep(5)
+        time.sleep(2)
     except:
         print("Tombol Next tidak ditemukan atau sudah di halaman terakhir.")
         break
 
     page += 1
 
-# Urutkan produk berdasarkan harga terbesar ke terkecil
 products.sort(key=lambda x: x[1], reverse=True)
 
-with open("datalaptoptokopedia.csv", "w", newline="", encoding="utf-8") as file:
+with open("datalaptop2.csv", "w", newline="", encoding="utf-8") as file:
     writer = csv.writer(file)
     writer.writerow(["No", "Nama Produk", "Harga", "Rating", "Terjual", "Toko", "Lokasi"])
     for i, product in enumerate(products, start=1):
         writer.writerow([i] + product)
 
-# Tutup browser
 driver.quit()
 print("Scraping selesai! Data disimpan di datalaptoptokopedia.csv")
 
-# Membuat Diagram Lingkaran Berdasarkan Kategori Harga
 kategori = {
     "Di bawah 5 juta": 0,
     "5 - 10 juta": 0,
