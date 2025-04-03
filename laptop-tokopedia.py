@@ -34,8 +34,8 @@ page = 1
 while page <= TOTAL_PAGES:
     print(f"Scraping halaman {page}...")
 
-    for _ in range(4):
-        driver.execute_script("window.scrollBy(0, 1200);")
+    for _ in range(1):
+        driver.execute_script("window.scrollBy(0, 5000);")
         time.sleep(1)
 
     soup = BeautifulSoup(driver.page_source, "html.parser")
@@ -77,7 +77,7 @@ while page <= TOTAL_PAGES:
 
 products.sort(key=lambda x: x[1], reverse=True)
 
-with open("datalaptop2.csv", "w", newline="", encoding="utf-8") as file:
+with open("datalaptop.csv", "w", newline="", encoding="utf-8") as file:
     writer = csv.writer(file)
     writer.writerow(["No", "Nama Produk", "Harga", "Rating", "Terjual", "Toko", "Lokasi"])
     for i, product in enumerate(products, start=1):
